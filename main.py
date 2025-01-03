@@ -449,4 +449,118 @@ if __name__ == '__main__':
             skip_pending=True
         )
     except KeyboardInterrupt:
-        raise SystemExit("\n\33[1;31m::\33[m Terminated by user")
+        raise SystemExit("\n\33[1;31m::\33[m Terminated by user")#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Virtual Number bot for Telegram
+# Service: OnlineSim.io
+
+# Standard library imports
+import os
+import json
+import random
+import time
+from typing import ClassVar, NoReturn, Any, Union, List, Dict
+
+# Related third-party module imports
+import telebot
+import phonenumbers
+import countryflag
+
+# Local application module imports
+from src.utils import User
+from src.vneng import VNEngine
+
+# Initialize the bot token from environment variables
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+if not BOT_TOKEN:
+    raise ValueError("BOT_TOKEN is not set in the environment variables")
+
+bot: ClassVar[Any] = telebot.TeleBot(BOT_TOKEN)
+print(f":: Bot is running with ID: {bot.get_me().id}")
+
+
+@bot.message_handler(commands=["start", "restart"])
+def start_command_handler(message: ClassVar[Any]) -> NoReturn:
+    """
+    Handle start commands in bot
+    """
+    user: ClassVar[Union[str, int]] = User(message.from_user)
+    bot.send_chat_action(chat_id=message.chat.id, action="typing")
+    bot.reply_to(
+        message=message,
+        text=(
+            f"⁀➴ Hello {user.pn}\n"
+            "Welcome to Virtual Number Bot\n\n"
+            "Send /help to get help message\n"
+            "Send /number to get a virtual number"
+        )
+    )
+
+
+@bot.message_handler(commands=["help", "usage"])
+def help_command_handler(message: ClassVar[Any]) -> NoReturn:
+    """
+    Handle help commands in bot
+    """
+    user: ClassVar[Union[str, int]] = User(message.from_user)
+    bot.send_chat_action(chat_id=message.chat.id, action="typing")
+    bot.reply_to(
+        message=message,
+        text=(
+            "·ᴥ· Virtual Number Bot\n\n"
+            "This bot uses OnlineSim.io API to fetch virtual numbers.\n"
+            "Commands:\n"
+            "★ /number: Get a new virtual number\n"
+            "★ /help: Show this help message\n"
+        )
+    )
+
+
+@bot.message_handler(commands=["number"])
+def number_command_handler(message: ClassVar[Any]) -> NoReturn:
+    """
+    Handle number commands in bot
+    """
+    bot.send_chat_action(chat_id=message.chat.id, action="typing")
+    prompt = bot.reply_to(message, text="Getting a random number for you...")
+    engine = VNEngine()
+    countries = engine.get_online_countries()
+    random.shuffle(countries)
+
+    for country in countries:
+        numbers = engine.get_country_numbers(country=country['name'])
+        for number in numbers:
+            parsed_number = phonenumbers.parse(f"+{number[1]}")
+            formatted_number = phonenumbers.format_number(
+                parsed_number, phonenumbers.PhoneNumberFormat.NATIONAL
+            )
+            flag = countryflag.getflag(
+                [
+                    phonenumbers.region_code_for_country_code(
+                        country_code=parsed_number.country_code
+                    )
+                ]
+            )
+            bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=prompt.message_id,
+                text=(
+                    f"{flag} Here is your number: +{number[1]}\n\n"
+                    f"Last Update: {number[0]}"
+                )
+            )
+            return
+    bot.edit_message_text(
+        chat_id=message.chat.id,
+        message_id=prompt.message_id,
+        text="No online number available at the moment."
+    )
+
+
+# Run the bot on polling mode
+if __name__ == '__main__':
+    try:
+        bot.infinity_polling(skip_pending=True)
+    except KeyboardInterrupt:
+        raise SystemExit("Terminated by user")
