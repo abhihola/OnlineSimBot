@@ -1,0 +1,17 @@
+{
+  "name": "OnlineSimBot",
+  "description": "A Telegram bot using OnlineSim.io services.",
+  "repository": "https://github.com/your-username/your-repository-name",
+  "keywords": ["telegram", "bot", "heroku"],
+  "stack": "heroku-20",
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "BOT_TOKEN": {
+      "description": "The Telegram bot token from BotFather.",
+      "required": true
+    }
+  }
