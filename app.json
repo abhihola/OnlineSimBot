@@ -1,33 +1,31 @@
 {
-  "name": "OnlineSimBot",
-  "description": "A bot for online simulation tasks.",
-  "repository": "https://github.com/abhihola/OnlineSimBot",
-  "keywords": ["python", "bot", "automation", "Heroku"],
-  "stack": "heroku-22",
+  "name": "Virtual Number Bot",
+  "description": "Telegram bot that generates virtual numbers using OnlineSim.io",
+  "repository": "https://github.com/Kourva/OnlineSimBot",
+  "keywords": ["python", "telegram", "virtual number", "onlineSim.io"],
   "env": {
-    "TOKEN": {
-      "description": "The authentication token for the bot.",
+    "TELEGRAM_TOKEN": {
+      "description": "Your Telegram bot token",
       "required": true
-    },
-    "DEBUG": {
-      "description": "Enable debug mode.",
-      "value": "False",
-      "required": false
     }
   },
-  "buildpacks": [
-    {
-      "url": "heroku/python"
-    }
-  ],
   "formation": {
     "web": {
       "quantity": 1,
       "size": "free"
     }
   },
-  "addons": [],
+  "addons": [
+    {
+      "plan": "heroku-redis:hobby-dev"
+    }
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
   "scripts": {
-    "postdeploy": "python main.py"
+    "postdeploy": "pip install -r requirements.txt"
   }
 }
